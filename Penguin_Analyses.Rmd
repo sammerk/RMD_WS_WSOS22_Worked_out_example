@@ -1,0 +1,94 @@
+---
+title: "Reproducible Report: Penguins"
+author: "Samuel Merk"
+date: "Montag 14. Februar 2021"
+output: 
+  html_document: 
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+## Import der Daten
+Mit den folgenden Code-Zeilen werden die Daten importiert und im Objekt `data_penguins` gespeichert. Da die Daten im Unterordner "data" liegen, kann ein kurzer relativer Pfad angeben werden. Dabei hilft in RStudio die Autovervollständigung (tab).
+
+```{r Datenimport, message=FALSE}
+library(tidyverse) # für die Funktion `read_csv()`
+                   # muss ggfs. noch installiert werden
+data_penguins <- 
+  read_csv("data/penguins.csv")
+```
+
+## Überblick über die Daten 
+Da der Datensatz recht wenige Variablen aufweist, lohnt sich ein Blick auf den "Kopf" des Datensatzes
+
+```{r}
+glimpse(data_penguins)
+```
+
+Im Datensatz gibt es die folgenden Variablen:
+
+* **species:** Eine nominale Variable mit den Ausprägungen
+    * *Adélie*
+    * *Chinstrap*
+    * *Gentoo*  
+* **island**: Eine nominale Variable mit den Ausprägungen
+    * *Biscoe*
+    * *Dream*
+    * *Torgersen*
+* **bill_length_mm**: Eine metrische Variable, welche die Schnabellänge in Millimetern beschreibt
+* **bill_depth_mm**: Eine metrische Variable, welche die Schnabelbreite in Millimetern beschreibt  
+* **flipper_length_mm**: Eine metrische Variable, welche die Flügellänge in Millimetern beschreibt
+* **body_mass_g**: Eine metrische Variable, welche das Körpergewicht in Gramm beschreibt
+* **sex**: Eine nominale Varible mit den Ausprägungen
+    * *male*
+    * *female*
+* **year**: Eine metrische Variable, welche das Jahr der Datenerhebung beschreibt
+
+## Illustration
+Zur Illustration der Variablen zwei Abbildungen:
+```{r, echo = FALSE, out.width="40%", fig.show='hold', fig.align='center', fig.cap="Illustration CC-BY von @allison_horst"}
+knitr::include_graphics("images/species.png")
+knitr::include_graphics("images/bill.png")
+```
+
+# Statistische Analysen
+Der Datensatz weist `r nrow(data_penguins)` Datenpunkte auf. Diese verteilen sich über die Species wie folgt:
+```{r}
+table(data_penguins$species)
+```
+
+## Beispielregression
+### Simpson's Paradox
+Prädiziert man `bill_length_mm` mit `bill_depht_mm`, stellt man ein Simpson's-Paradox bei Moderation durch `species` fest:
+```{r}
+mod01 <- lm(bill_depth_mm ~ bill_length_mm, data = data_penguins)
+summary(mod01)
+
+mod02 <- lm(bill_depth_mm ~ bill_length_mm*species, data = data_penguins)
+summary(mod02)
+```
+
+Es gibt viele Möglichkeiten Modellierungsergebnisse APA-konform darzustellen. Eine davon ist die `sjPlot::tab_model()`-Funktion:
+```{r}
+library(sjPlot) # muss ggfs. noch installiert werden
+tab_model(mod01, mod02)
+```
+
+### Graphische Darstellung
+Das "Paradox" ist in einer graphischen Darstellung schnell eine Konfundierung der beiden metrischen Variablen durch die Species erkennbar:
+```{r}
+library(hrbrthemes) # muss ggfs. noch installiert werden
+ggplot(data_penguins,
+       aes(bill_depth_mm, bill_length_mm, color = species)) +
+  geom_point() + 
+  stat_smooth(method = "lm") + 
+  stat_smooth(aes(x = bill_depth_mm, y = bill_length_mm), 
+              color = "black", method = "lm") + 
+  theme_ipsum() + 
+  labs(title = "Veranschaulichung des Simpsons Paradox",
+       subtitle = "anhand des Penguins Datensatzes",
+       caption= "Die schwarze Gerade stellt 'mod01' die Ergebnisse aus mod01 dar.")
+```
+
+
