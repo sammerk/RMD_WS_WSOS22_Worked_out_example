@@ -60,7 +60,23 @@ table(data_penguins$species)
 
 ## Beispielregression
 ### Simpson's Paradox
-Prädiziert man `bill_length_mm` mit `bill_depht_mm`, stellt man ein Simpson's-Paradox bei Moderation durch `species` fest:
+Prädiziert man `bill_length_mm` mit `bill_depht_mm` 
+
+$$\operatorname{bill\_depth\_mm} = \alpha + \beta_{1}(\operatorname{bill\_length\_mm}) + \epsilon$$
+stellt man ein Simpson's-Paradox bei Moderation durch `species` fest
+
+$$
+\begin{aligned}
+\operatorname{bill\_depth\_mm} &= \alpha\ + \\
+&\quad \beta_{1}(\operatorname{bill\_length\_mm})\ + \\
+&\quad \beta_{2}(\operatorname{species}_{\operatorname{Chinstrap}})\ + \\
+&\quad \beta_{3}(\operatorname{species}_{\operatorname{Gentoo}})\ + \\
+&\quad \beta_{4}(\operatorname{bill\_length\_mm} \times \operatorname{species}_{\operatorname{Chinstrap}})\ + \\
+&\quad \beta_{5}(\operatorname{bill\_length\_mm} \times \operatorname{species}_{\operatorname{Gentoo}})\ + \\
+&\quad \epsilon
+\end{aligned}
+$$
+
 ```{r}
 mod01 <- lm(bill_depth_mm ~ bill_length_mm, data = data_penguins)
 summary(mod01)
@@ -77,7 +93,7 @@ tab_model(mod01, mod02)
 
 ### Graphische Darstellung
 Das "Paradox" ist in einer graphischen Darstellung schnell eine Konfundierung der beiden metrischen Variablen durch die Species erkennbar:
-```{r}
+```{r, warning=FALSE}
 library(hrbrthemes) # muss ggfs. noch installiert werden
 ggplot(data_penguins,
        aes(bill_depth_mm, bill_length_mm, color = species)) +
@@ -88,7 +104,7 @@ ggplot(data_penguins,
   theme_ipsum() + 
   labs(title = "Veranschaulichung des Simpsons Paradox",
        subtitle = "anhand des Penguins Datensatzes",
-       caption= "Die schwarze Gerade stellt 'mod01' die Ergebnisse aus mod01 dar.")
+       caption= "Die schwarze Gerade stellt die Ergebnisse aus mod01 dar.")
 ```
 
 
